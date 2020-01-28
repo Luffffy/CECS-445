@@ -2,38 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Convert;
+using static GridConverter;
 
-
-public class UserPlayer : MonoBehaviour, Tileable, Player
+public class ComputerOponent : MonoBehaviour, Tileable, Player
 {
     private float xCoordinate, yCoordinate, zCoordinate;
     int column, row;
-    private USAGameBoard gameBoard;
+    private Map gameBoard;
     Renderer rend;
-    bool isAlreadyClicked = false;
 
     // Start is called before the first frame update
     void Start()
     {
         rend = GetComponent<Renderer>();
-    }
-
-    // Hides/Shows user's potential moves
-    public void OnMouseDown()
-    {
-        // Hide user's possible moves
-        if (this.isAlreadyClicked)
-        {
-            isAlreadyClicked = false;
-            gameBoard.ResetHighlightedTiles();
-        }
-        // Show user's possible moves
-        else
-        {
-            this.isAlreadyClicked = true;
-            gameBoard.HighlightPotentialMoves(this);
-        }
     }
 
     // Moves tile and updates the gameboard with the tile's new location
@@ -48,11 +29,6 @@ public class UserPlayer : MonoBehaviour, Tileable, Player
         this.yCoordinate = yCoordinate;
         this.zCoordinate = zCoordinate;
         this.transform.position = new Vector3(xCoordinate, yCoordinate, zCoordinate);
-    }
-
-    public void Move()
-    {
-        throw new System.NotImplementedException();
     }
 
     public float GetXLocation()
@@ -70,23 +46,36 @@ public class UserPlayer : MonoBehaviour, Tileable, Player
         return zCoordinate;
     }
 
+    // Simulates a fight in the console for now
+    public void OnMouseDown()
+    {
+        // TODO: This is an example todo in Visual Studios, can be seen in task list. Trump/pelosi collision needs to be handle differently.
+        Debug.Log("Computer and user fight to the death, you lose.");
+    }
+
+    // Moves unit right 5 spaces for now
+    public void Move()
+    {
+        this.SetLocation(xCoordinate + 5, yCoordinate, zCoordinate);
+    }
+
     public void Highlight()
     {
         throw new System.NotImplementedException();
     }
 
     // Creates an opponent, sets their location, adds a box collider
-    public void Initialize(USAGameBoard gameBoard, float xCoordinate, float yCoordinate, float zCoordinate)
+    public void Initialize(Map gameBoard, float xLocation, float yLocation, float zLocation)
     {
         this.gameBoard = gameBoard;
-        SetLocation(xCoordinate, yCoordinate, zCoordinate);
+        SetLocation(xLocation, yLocation, zLocation);
         this.gameObject.AddComponent(typeof(BoxCollider));
     }
 
     // Returns a bool indicating if other tiles can be moved onto this player's location
     public bool IsOccupiable()
     {
-        return false;
+        return false; 
     }
 
     // Removes highlight
@@ -95,9 +84,8 @@ public class UserPlayer : MonoBehaviour, Tileable, Player
         rend.material.color = Color.white;
     }
 
-    // Sets a boolean which controls which action this tile takes upon a mousedown event
     public void IsAwaitingSelection(bool awaitingStatus)
     {
-        this.isAlreadyClicked = awaitingStatus;
+        throw new System.NotImplementedException();
     }
 }

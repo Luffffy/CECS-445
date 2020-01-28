@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraPosition : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
     private readonly float MAX_ZOOM_IN = 1.4f;
     private readonly float MAX_ZOOM_OUT = 36.0f;

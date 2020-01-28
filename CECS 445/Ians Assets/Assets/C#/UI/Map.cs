@@ -3,9 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Convert;
+using static GridConverter;
 
-public class USAGameBoard : MonoBehaviour, GameBoard
+public class Map : MonoBehaviour, GameBoard
 {
     private readonly int NUM_ROWS = 61;
     private readonly int NUM_COLUMNS = 115;

@@ -13,7 +13,7 @@ class EmptyTile : MonoBehaviour, Tileable
     Renderer rend;
     bool isAPotentialMoveSelection = false;
     bool isAwaitingSelection = false;
-    USAGameBoard gameBoard;
+    Map gameBoard;
 
     void Start()
     {
@@ -109,7 +109,7 @@ class EmptyTile : MonoBehaviour, Tileable
     }
 
     // Creates an empty tile, sets its location, adds a box collider
-    public void Initialize(USAGameBoard gameBoard, float xLocation, float yLocation, float zLocation)
+    public void Initialize(Map gameBoard, float xLocation, float yLocation, float zLocation)
     {
         SetLocation(xLocation, yLocation, zLocation);
         this.gameBoard = gameBoard;

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Convert
+public class GridConverter
 {
     // Round X coordinate to nearet int
     public static int RoundXCoordToInt(float location)
@@ -11,6 +11,7 @@ public class Convert
         return (int) Math.Round(location, 0);
     }
 
+    // Round Y coordinate to nearet int, returns positive int
     public static int RoundYCoordToPosInt(float location)
     {
         return -1* (int)Math.Round(location, 0);
