@@ -4,30 +4,55 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Convert;
 
-public class Pelosi : MonoBehaviour, Tileable, Player
+
+public class UserPlayer : MonoBehaviour, Tileable, Player
 {
     private float xCoordinate, yCoordinate, zCoordinate;
     int column, row;
-    private GameBoard gameBoard;
+    private USAGameBoard gameBoard;
     Renderer rend;
+    bool isAlreadyClicked = false;
 
+    // Start is called before the first frame update
     void Start()
     {
         rend = GetComponent<Renderer>();
     }
 
-    // Moves tile and updates the gameboard
+    // Hides/Shows user's potential moves
+    public void OnMouseDown()
+    {
+        // Hide user's possible moves
+        if (this.isAlreadyClicked)
+        {
+            isAlreadyClicked = false;
+            gameBoard.ResetHighlightedTiles();
+        }
+        // Show user's possible moves
+        else
+        {
+            this.isAlreadyClicked = true;
+            gameBoard.HighlightPotentialMoves(this);
+        }
+    }
+
+    // Moves tile and updates the gameboard with the tile's new location
     public void SetLocation(float xCoordinate, float yCoordinate, float zCoordinate)
     {
         column = RoundXCoordToInt(xCoordinate);
         row = RoundYCoordToPosInt(yCoordinate);
 
-        gameBoard.UpdateGameBoard(this, column, row);
+        gameBoard.RecordTileMovement(this, column, row);
 
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.zCoordinate = zCoordinate;
         this.transform.position = new Vector3(xCoordinate, yCoordinate, zCoordinate);
+    }
+
+    public void Move()
+    {
+        throw new System.NotImplementedException();
     }
 
     public float GetXLocation()
@@ -45,35 +70,23 @@ public class Pelosi : MonoBehaviour, Tileable, Player
         return zCoordinate;
     }
 
-    // Simulates fight in console for now
-    public void OnMouseDown()
-    {
-        // TODO: This is an example todo in Visual Studios, can be seen in task list. Trump/pelosi collision needs to be handle differently.
-
-        Debug.Log("Pelosi and trump fight to the death, you lose.");
-    }
-
-    // Moves her right 5 spaces for now
-    public void Move()
-    {
-        this.SetLocation(xCoordinate + 5, yCoordinate, zCoordinate);
-    }
-
     public void Highlight()
     {
         throw new System.NotImplementedException();
     }
 
-    public void Initialize(GameBoard gameBoard, float xLocation, float yLocation, float zLocation)
+    // Creates an opponent, sets their location, adds a box collider
+    public void Initialize(USAGameBoard gameBoard, float xCoordinate, float yCoordinate, float zCoordinate)
     {
         this.gameBoard = gameBoard;
-        SetLocation(xLocation, yLocation, zLocation);
+        SetLocation(xCoordinate, yCoordinate, zCoordinate);
         this.gameObject.AddComponent(typeof(BoxCollider));
     }
 
+    // Returns a bool indicating if other tiles can be moved onto this player's location
     public bool IsOccupiable()
     {
-        return false; 
+        return false;
     }
 
     // Removes highlight
@@ -82,8 +95,9 @@ public class Pelosi : MonoBehaviour, Tileable, Player
         rend.material.color = Color.white;
     }
 
+    // Sets a boolean which controls which action this tile takes upon a mousedown event
     public void IsAwaitingSelection(bool awaitingStatus)
     {
-        throw new System.NotImplementedException();
+        this.isAlreadyClicked = awaitingStatus;
     }
 }

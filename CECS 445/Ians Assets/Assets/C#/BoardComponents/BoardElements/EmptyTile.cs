@@ -13,7 +13,7 @@ class EmptyTile : MonoBehaviour, Tileable
     Renderer rend;
     bool isAPotentialMoveSelection = false;
     bool isAwaitingSelection = false;
-    GameBoard gameBoard;
+    USAGameBoard gameBoard;
 
     void Start()
     {
@@ -25,12 +25,13 @@ class EmptyTile : MonoBehaviour, Tileable
         CheckForCursorHover();
     }
 
+    // Accepts a user move if awaitingSelection, initiates the computer's turn
     public void OnMouseDown()
     {
         if (this.isAwaitingSelection)
         {
             gameBoard.MovePlayerToTile(this);
-            gameBoard.pelosi.Move();
+            gameBoard.computerPlayer.Move();
         }
     }
 
@@ -78,12 +79,13 @@ class EmptyTile : MonoBehaviour, Tileable
         this.isAPotentialMoveSelection = false;
     }
 
+    // Highlights a square with a custom color
     private void CustomHighLight(Color color)
     {
         rend.material.color = color;
     }
 
-    // Checks if the cursor is hover on this tile
+    // Checks if the cursor is hovering on this tile
     private void CheckForCursorHover()
     {
         Vector3 cursorLocation = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -94,19 +96,20 @@ class EmptyTile : MonoBehaviour, Tileable
         {
             HighlightMouseLocation();
         }
-        // Remove highlight if cursor is not in the tile
+        // Keep the tile highlighted green if its a potential move
         if(!cursorIsOnTile && this.isAPotentialMoveSelection)
         {
             CustomHighLight(Color.green);
         }
-
+        // Remove all highlights
         if(!cursorIsOnTile && !this.isAPotentialMoveSelection)
         {
             RemoveHighLight();
         }
-}
+    }
 
-    public void Initialize(GameBoard gameBoard, float xLocation, float yLocation, float zLocation)
+    // Creates an empty tile, sets its location, adds a box collider
+    public void Initialize(USAGameBoard gameBoard, float xLocation, float yLocation, float zLocation)
     {
         SetLocation(xLocation, yLocation, zLocation);
         this.gameBoard = gameBoard;
@@ -119,6 +122,7 @@ class EmptyTile : MonoBehaviour, Tileable
         return true;
     }
 
+    // Returns a bool indicating if the cursor is hover on tile
     private bool CursorIsOnTile(float mouseXLocation, float mouseYLocation)
     {
         if ((-0.5f < mouseXLocation && mouseXLocation < 0.5) && (-0.5 < mouseYLocation && mouseYLocation < 0.5))
@@ -128,7 +132,7 @@ class EmptyTile : MonoBehaviour, Tileable
         return false;
     }
 
-    // Sets bool isAwaitingSelection which can alter OnMouseDown() actions
+    // Sets bool isAwaitingSelection which alters OnMouseDown() actions
     public void IsAwaitingSelection(bool awaitingStatus)
     {
         this.isAwaitingSelection = awaitingStatus;

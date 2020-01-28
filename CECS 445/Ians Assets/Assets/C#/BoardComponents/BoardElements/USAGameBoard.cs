@@ -5,21 +5,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Convert;
 
-public class GameBoard : MonoBehaviour
+public class USAGameBoard : MonoBehaviour, GameBoard
 {
     private readonly int NUM_ROWS = 61;
     private readonly int NUM_COLUMNS = 115;
     private readonly float TILE_SIZE = 1;
-    internal Trump trump;
-    internal Pelosi pelosi;
-    private readonly float TRUMP_START_X = 97, TRUMP_START_Y = -25, TRUMP_START_Z = -2; 
-    private readonly float PELOSI_START_X = 4, PELOSI_START_Y = -24, PELOSI_START_Z = -2;
-    private readonly float LADDER_X_LOCATION = 38, LADDER_Y_LOCATION = -48;
+    internal UserPlayer userPlayer;
+    internal ComputerOponent computerPlayer;
+    private readonly float USER_START_X = 97, USER_START_Y = -25, USER_START_Z = -2; 
+    private readonly float COMPUTER_START_X = 4, COMPUTER_START_Y = -24, COMPUTER_START_Z = -2;
+    private readonly float VICTORY_X_LOCATION = 38, VICTORY_Y_LOCATION = -48;
     private Tileable[,] gameBoard;
     private EmptyTile[,] emptyBoardTiles;
     internal List<Tileable> highlightedTiles = new List<Tileable>();
     private Tileable playerToMove;
-    private int manhattanDistanceMax = 10;
+    private readonly int MAX_PLAYER_MOVEMENT = 10;
+    private readonly string VICTORY_MESSAGE = "You Won! Trump escaped Pelosi.\n";
+    private readonly string DEFEAT_MESSAGE = "You Lost! Pelosi gotcha.\n";
 
 
     // Start is called before the first frame update
@@ -30,7 +32,7 @@ public class GameBoard : MonoBehaviour
     }
 
     // Readies tiles that could be moved to
-    internal void AwaitMoveSelection(Tileable player)
+    public void AwaitUserSelection(Tileable player)
     {
         foreach(Tileable potentialChoice in highlightedTiles)
         {
@@ -39,7 +41,8 @@ public class GameBoard : MonoBehaviour
         playerToMove = player;
     }
 
-    internal void MovePlayerToTile(Tileable destination)
+    // Moves a player to a tile, resets any highlights, checks for end game
+    public void MovePlayerToTile(Tileable destination)
     {
         playerToMove.SetLocation(destination.GetXLocation(), destination.GetYLocation(), playerToMove.GetZLocation());
         ResetHighlightedTiles();
@@ -71,39 +74,39 @@ public class GameBoard : MonoBehaviour
         }
     }
 
-    // Adds trump and pelosi to the board
+    // Creates and adds starting players to the board
     private void AddStartingCharacters()
     {
         // Add trump
         GameObject trumpImage = Instantiate(Resources.Load("Prefabs/trump") as GameObject);
-        trump = trumpImage.AddComponent<Trump>();
-        trump.Initialize(this, TRUMP_START_X, TRUMP_START_Y, TRUMP_START_Z);
+        userPlayer = trumpImage.AddComponent<UserPlayer>();
+        userPlayer.Initialize(this, USER_START_X, USER_START_Y, USER_START_Z);
             
 
         // Add pelosi
         GameObject pelosiImage = Instantiate(Resources.Load("Prefabs/pelosi") as GameObject);
-        pelosi = pelosiImage.AddComponent<Pelosi>();
-        pelosi.Initialize(this, PELOSI_START_X, PELOSI_START_Y, PELOSI_START_Z);
+        computerPlayer = pelosiImage.AddComponent<ComputerOponent>();
+        computerPlayer.Initialize(this, COMPUTER_START_X, COMPUTER_START_Y, COMPUTER_START_Z);
     }
 
     // Checks for Game Ending conditions
     public void CheckForEndGame()
     {
-        // Check if trump has reached the ladder
-        if(trump.GetXLocation() == LADDER_X_LOCATION && trump.GetYLocation() == LADDER_Y_LOCATION)
+        // Check if player has reached the objective
+        if(userPlayer.GetXLocation() == VICTORY_X_LOCATION && userPlayer.GetYLocation() == VICTORY_Y_LOCATION)
         {
-            Debug.Log("You Won! Trump escaped Pelosi.\n");
+            Debug.Log(VICTORY_MESSAGE);
         }
 
-        // Check if pelosi captured trump
-        if (trump.GetXLocation() == pelosi.GetXLocation() && trump.GetYLocation() == pelosi.GetYLocation())
+        // Check if the computer has captured the player
+        if (userPlayer.GetXLocation() == computerPlayer.GetXLocation() && userPlayer.GetYLocation() == computerPlayer.GetYLocation())
         {
-            Debug.Log("You Lost! Pelosi gotcha.\n");
+            Debug.Log(DEFEAT_MESSAGE);
         }
     }
 
     // Must be called before the tile has it's location updated
-    public void UpdateGameBoard(Tileable tile, int newColumn, int newRow)
+    public void RecordTileMovement(Tileable tile, int newColumn, int newRow)
     {
         // Make tile's old board location empty
         int previousTileX = RoundXCoordToInt(tile.GetXLocation());
@@ -115,23 +118,23 @@ public class GameBoard : MonoBehaviour
     }
 
     // Highlights potential moves and readys selectable tiles to be clicked
-    public void HighlightAvailableTiles(Tileable origin)
+    public void HighlightPotentialMoves(Tileable currentTile)
     {
         int distanceToDestination;
 
-        foreach(Tileable destinationTile in gameBoard)
+        foreach(Tileable pickableTile in gameBoard)
         {
-            distanceToDestination = calculateManhattanDist(destinationTile, origin);
+            distanceToDestination = CalculateManhattanDist(pickableTile, currentTile);
 
-            if (distanceToDestination <= manhattanDistanceMax && destinationTile.IsOccupiable())
+            if (distanceToDestination <= MAX_PLAYER_MOVEMENT && pickableTile.IsOccupiable())
             {
-                destinationTile.Highlight();
-                highlightedTiles.Add(destinationTile);
+                pickableTile.Highlight();
+                highlightedTiles.Add(pickableTile);
             }
-            origin.RemoveHighLight();
+            currentTile.RemoveHighLight();
         }
 
-        AwaitMoveSelection(origin);
+        AwaitUserSelection(currentTile);
     }
 
     // Sets all highlighted tiles to their default
@@ -143,11 +146,11 @@ public class GameBoard : MonoBehaviour
             tile.IsAwaitingSelection(false);
         }
         highlightedTiles.Clear();
-        trump.IsAwaitingSelection(false);
+        userPlayer.IsAwaitingSelection(false);
     }
 
     // Returns the manhattan distance between two tiles
-    private int calculateManhattanDist(Tileable destination, Tileable origin)
+    private int CalculateManhattanDist(Tileable destination, Tileable origin)
     {
         int xDifference = Math.Abs((int)(destination.GetXLocation() - origin.GetXLocation()));
         int yDifference = Math.Abs((int)(destination.GetYLocation() - origin.GetYLocation()));

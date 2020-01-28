@@ -14,7 +14,7 @@ namespace Interfaces
         float GetZLocation();
         void Highlight();
         void RemoveHighLight();
-        void Initialize(GameBoard gameBoard, float xLocation, float yLocation, float zLocation);
+        void Initialize(USAGameBoard gameBoard, float xLocation, float yLocation, float zLocation);
         bool IsOccupiable();
         void IsAwaitingSelection(bool awaitingStatus);
     }
