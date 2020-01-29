@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using static GridConverter;
 
-public class ComputerOponent : MonoBehaviour, Tileable, Player
+public class ComputerOponent : MonoBehaviour, Tileable, Player, Subject
 {
     private float xCoordinate, yCoordinate, zCoordinate;
+    private float futureXCoord, futureYCoord, futureZCoord;
     int column, row;
     private Map gameBoard;
     Renderer rend;
+    List<Observer> observers = new List<Observer>();
 
     // Start is called before the first frame update
     void Start()
@@ -20,30 +22,16 @@ public class ComputerOponent : MonoBehaviour, Tileable, Player
     // Moves tile and updates the gameboard with the tile's new location
     public void SetLocation(float xCoordinate, float yCoordinate, float zCoordinate)
     {
-        column = RoundXCoordToInt(xCoordinate);
-        row = RoundYCoordToPosInt(yCoordinate);
+        futureXCoord = xCoordinate;
+        futureYCoord = yCoordinate;
+        futureZCoord = zCoordinate;
 
-        gameBoard.RecordTileMovement(this, column, row);
+        NotifyObservers();
 
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.zCoordinate = zCoordinate;
         this.transform.position = new Vector3(xCoordinate, yCoordinate, zCoordinate);
-    }
-
-    public float GetXLocation()
-    {
-        return xCoordinate;
-    }
-
-    public float GetYLocation()
-    {
-        return yCoordinate;
-    }
-
-    public float GetZLocation()
-    {
-        return zCoordinate;
     }
 
     // Simulates a fight in the console for now
@@ -87,5 +75,53 @@ public class ComputerOponent : MonoBehaviour, Tileable, Player
     public void IsAwaitingSelection(bool awaitingStatus)
     {
         throw new System.NotImplementedException();
+    }
+
+    public void AttachObserver(Observer o)
+    {
+        observers.Add(o);
+    }
+
+    public void DettachObserver(Observer o)
+    {
+        observers.Remove(o);
+    }
+
+    public void NotifyObservers()
+    {
+        foreach (Observer observer in observers)
+        {
+            observer.ReceiveUpdate(this);
+        }
+    }
+
+    public float GetFutureXLocation()
+    {
+        return futureXCoord;
+    }
+
+    public float GetFutureYLocation()
+    {
+        return futureYCoord;
+    }
+
+    public float GetFutureZLocation()
+    {
+        return futureZCoord;
+    }
+
+    public float GetXLocation()
+    {
+        return xCoordinate;
+    }
+
+    public float GetYLocation()
+    {
+        return yCoordinate;
+    }
+
+    public float GetZLocation()
+    {
+        return zCoordinate;
     }
 }

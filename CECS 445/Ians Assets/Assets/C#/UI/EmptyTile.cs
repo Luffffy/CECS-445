@@ -44,21 +44,6 @@ class EmptyTile : MonoBehaviour, Tileable
         this.transform.position = new Vector3(xCoordinate, yCoordinate, zCoordinate);
     }
 
-    public float GetXLocation()
-    {
-        return xCoordinate;
-    }
-
-    public float GetYLocation()
-    {
-        return yCoordinate;
-    }
-
-    public float GetZLocation()
-    {
-        return zCoordinate;
-    }
-
     // Changes the tile color to green
     public void Highlight()
     {
@@ -136,6 +121,36 @@ class EmptyTile : MonoBehaviour, Tileable
     public void IsAwaitingSelection(bool awaitingStatus)
     {
         this.isAwaitingSelection = awaitingStatus;
+    }
+
+    public float GetFutureXLocation()
+    {
+        throw new NotImplementedException();
+    }
+
+    public float GetFutureYLocation()
+    {
+        throw new NotImplementedException();
+    }
+
+    public float GetFutureZLocation()
+    {
+        throw new NotImplementedException();
+    }
+
+    public float GetXLocation()
+    {
+        return xCoordinate;
+    }
+
+    public float GetYLocation()
+    {
+        return yCoordinate;
+    }
+
+    public float GetZLocation()
+    {
+        return zCoordinate;
     }
 }
 

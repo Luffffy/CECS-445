@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace Interfaces
 {
-
     public interface Player
     {
         void Move();

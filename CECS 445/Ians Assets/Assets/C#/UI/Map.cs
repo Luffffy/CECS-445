@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static GridConverter;
 
-public class Map : MonoBehaviour, GameBoard
+public class Map : MonoBehaviour, GameBoard, Observer
 {
     private readonly int NUM_ROWS = 61;
     private readonly int NUM_COLUMNS = 115;
@@ -22,7 +22,6 @@ public class Map : MonoBehaviour, GameBoard
     private readonly int MAX_PLAYER_MOVEMENT = 10;
     private readonly string VICTORY_MESSAGE = "You Won! Trump escaped Pelosi.\n";
     private readonly string DEFEAT_MESSAGE = "You Lost! Pelosi gotcha.\n";
-
 
     // Start is called before the first frame update
     void Start()
@@ -106,11 +105,15 @@ public class Map : MonoBehaviour, GameBoard
     }
 
     // Must be called before the tile has it's location updated
-    public void RecordTileMovement(Tileable tile, int newColumn, int newRow)
+    private void RecordTileMovement(Tileable tile)
     {
         // Make tile's old board location empty
         int previousTileX = RoundXCoordToInt(tile.GetXLocation());
         int previousTileY = RoundYCoordToPosInt(tile.GetYLocation());
+        int newColumn = RoundXCoordToInt(tile.GetFutureXLocation());
+        int newRow = RoundYCoordToPosInt(tile.GetFutureYLocation());
+
+        // Put an empty tile in the old position
         gameBoard[previousTileX, previousTileY] = emptyBoardTiles[previousTileX, previousTileY];
 
         // Give tile new location on gameboard
@@ -126,6 +129,7 @@ public class Map : MonoBehaviour, GameBoard
         {
             distanceToDestination = CalculateManhattanDist(pickableTile, currentTile);
 
+            // Highlight tile if elligible
             if (distanceToDestination <= MAX_PLAYER_MOVEMENT && pickableTile.IsOccupiable())
             {
                 pickableTile.Highlight();
@@ -158,4 +162,11 @@ public class Map : MonoBehaviour, GameBoard
         return xDifference + yDifference;
     }
 
+    // Observer pattern - receive updates from subjects
+    public void ReceiveUpdate(UnityEngine.Object observee)
+    {
+        if(observee is Tileable){
+            RecordTileMovement(observee as Tileable);
+        }
+    }
 }
