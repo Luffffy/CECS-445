@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public interface Observer
 {
-    void ReceiveUpdate(Object observee);
+    void ReceiveUpdate(Object observee, Message message);
 }

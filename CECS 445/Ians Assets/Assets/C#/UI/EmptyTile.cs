@@ -1,38 +1,27 @@
 ﻿using Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
-
-class EmptyTile : MonoBehaviour, Tileable
+// This class outlines an empty tile which responds to mouse actions.
+public class EmptyTile : MonoBehaviour, Tileable, Observable
 {
     private float xCoordinate, yCoordinate, zCoordinate;
-    Renderer rend;
-    bool isAPotentialMoveSelection = false;
-    bool isAwaitingSelection = false;
-    Map gameBoard;
-
-    void Start()
-    {
-        rend = GetComponent<Renderer>();
-    }
+    Renderer graphicRenderer;
+    public GameBoard gameBoard;
+    TileStatesFactory states;
+    State currentState;
+    protected List<Observer> observers = new List<Observer>();
 
     void Update()
     {
         CheckForCursorHover();
     }
 
-    // Accepts a user move if awaitingSelection, initiates the computer's turn
+    // Handles left clicks
     public void OnMouseDown()
     {
-        if (this.isAwaitingSelection)
-        {
-            gameBoard.MovePlayerToTile(this);
-            gameBoard.computerPlayer.Move();
-        }
+        currentState.TakeAction();
     }
 
     // Moves tile to a specific location on the board
@@ -47,58 +36,72 @@ class EmptyTile : MonoBehaviour, Tileable
     // Changes the tile color to green
     public void Highlight()
     {
-        this.isAPotentialMoveSelection = true;
-        rend.material.color = Color.green;
+        graphicRenderer.material.color = Color.green;
+        currentState = states.awaitingMove;
     }
 
     // Changes the tile the cursor is over to blue
-    public void HighlightMouseLocation()
+    public void HighlightCursorLocation()
     {
-        rend.material.color = Color.blue;
+        graphicRenderer.material.color = Color.blue;
+        currentState = states.tileHighlighted;
     }
 
     // Removes highlight
     public void RemoveHighLight()
     {
-        rend.material.color = Color.white;
-        this.isAPotentialMoveSelection = false;
+        graphicRenderer.material.color = Color.white;
+        currentState = states.tileIdle;
     }
 
     // Highlights a square with a custom color
     private void CustomHighLight(Color color)
     {
-        rend.material.color = color;
+        graphicRenderer.material.color = color;
+        currentState = states.awaitingMove;
     }
 
     // Checks if the cursor is hovering on this tile
     private void CheckForCursorHover()
     {
-        Vector3 cursorLocation = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 cursorLocation = Camera.main.ScreenToWorldPoint(Input.mousePosition);  // Get cursor location
         bool cursorIsOnTile = CursorIsOnTile(cursorLocation.x - xCoordinate, cursorLocation.y - yCoordinate);
 
-        // If cursor is inside the tile: highlight the tile
-        if (cursorIsOnTile)
+        // If cursor is inside tile that can't be picked: highlight the tile
+        if (cursorIsOnTile  && currentState != states.awaitingMove)
         {
-            HighlightMouseLocation();
+            HighlightCursorLocation();
         }
-        // Keep the tile highlighted green if its a potential move
-        if(!cursorIsOnTile && this.isAPotentialMoveSelection)
+
+        // If cursor is inside tile that can be picked: highlight the tile
+        if (cursorIsOnTile && currentState == states.awaitingMove)
+        {
+            CustomHighLight(Color.blue);
+        }
+
+        // If cursor was on highlighted tile and has moved, recover highlight
+        if (!cursorIsOnTile && currentState == states.awaitingMove)
         {
             CustomHighLight(Color.green);
         }
         // Remove all highlights
-        if(!cursorIsOnTile && !this.isAPotentialMoveSelection)
+        if (!cursorIsOnTile && currentState == states.tileHighlighted)
         {
             RemoveHighLight();
         }
     }
 
     // Creates an empty tile, sets its location, adds a box collider
-    public void Initialize(Map gameBoard, float xLocation, float yLocation, float zLocation)
+    public void Initialize(GameBoard gameBoard, float xLocation, float yLocation, float zLocation)
     {
         SetLocation(xLocation, yLocation, zLocation);
         this.gameBoard = gameBoard;
         this.gameObject.AddComponent(typeof(BoxCollider));
+        graphicRenderer = GetComponent<Renderer>();
+        observers.Add(gameBoard);
+
+        states = new TileStatesFactory(this);
+        currentState = states.tileIdle;
     }
 
     // Returns a bool indicating if the a player can move to this tile
@@ -107,7 +110,7 @@ class EmptyTile : MonoBehaviour, Tileable
         return true;
     }
 
-    // Returns a bool indicating if the cursor is hover on tile
+    // Returns a bool indicating if the cursor is hovering on tile
     private bool CursorIsOnTile(float mouseXLocation, float mouseYLocation)
     {
         if ((-0.5f < mouseXLocation && mouseXLocation < 0.5) && (-0.5 < mouseYLocation && mouseYLocation < 0.5))
@@ -115,12 +118,6 @@ class EmptyTile : MonoBehaviour, Tileable
             return true;
         }
         return false;
-    }
-
-    // Sets bool isAwaitingSelection which alters OnMouseDown() actions
-    public void IsAwaitingSelection(bool awaitingStatus)
-    {
-        this.isAwaitingSelection = awaitingStatus;
     }
 
     public float GetFutureXLocation()
@@ -151,6 +148,27 @@ class EmptyTile : MonoBehaviour, Tileable
     public float GetZLocation()
     {
         return zCoordinate;
+    }
+
+    // Adds an observer to this class
+    public void AttachObserver(Observer o)
+    {
+        observers.Add(o);
+    }
+
+    // Removes an observer from this class
+    public void DettachObserver(Observer o)
+    {
+        observers.Remove(o);
+    }
+
+    // Alerts all observers to a positional change
+    public void NotifyObservers()
+    {
+        foreach (Observer observer in observers)
+        {
+            observer.ReceiveUpdate(this, Message.TileClicked);
+        }
     }
 }
 
