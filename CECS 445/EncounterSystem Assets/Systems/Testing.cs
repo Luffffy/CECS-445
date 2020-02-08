@@ -6,9 +6,9 @@ public class Testing : MonoBehaviour {
     private Grid<Tile> board;
 
     // Wasn't sure how nesting of systems is suppose to work and just initialized them to test
-    private TileSystem tileSystem = new TileSystem();
+    private TileSystem tileSystem;
     private BoardSystem boardSystem;
-    private BoardPieceSystem boardPiece;
+    private BoardPieceSystem boardPieceSystem;
     private UnitSystem unitSystem;
     private MovementSystem movementSystem;
     private CharacterSystem characterSystem;
@@ -17,7 +17,7 @@ public class Testing : MonoBehaviour {
         boardSystem = new BoardSystem();
         board = boardSystem.CreateBoard(20, 10, 10f);
         tileSystem = new TileSystem();
-        boardPiece = new BoardPieceSystem();
+        boardPieceSystem = new BoardPieceSystem();
         unitSystem = new UnitSystem();
         movementSystem = new MovementSystem();
         characterSystem = new CharacterSystem();

@@ -19,6 +19,7 @@ namespace Components {
         }
 
         private BoardPiece _selectedPiece;
+        private List<Tile> _selectedPieceRange;
         public int width { get; }
         public int height { get; }
         public float cellSize { get; }
@@ -33,16 +34,29 @@ namespace Components {
                 _selectedPiece = value;
                 if (_selectedPiece != null) {
                     selectedPieceRange = FindValidMoves(selectedPiece);
-                    ToggleTileZone(selectedPieceRange, true);
+                    
                 } else {
-                    ToggleTileZone(selectedPieceRange, false);
                     selectedPieceRange = default(List<Tile>);
                 }
                 ;
             }
         }
 
-        public List<Tile> selectedPieceRange { get; set; }
+
+        public List<Tile> selectedPieceRange {
+            get {
+                return _selectedPieceRange;
+            }
+            set {
+                if (_selectedPieceRange != null) {
+                    Action<Tile> unHighlight = (Tile) => ToggleHighlightEffect(Tile, false);
+                    ApplyTileEffects(_selectedPieceRange, unHighlight);
+                }
+                _selectedPieceRange = value;
+                Action<Tile> Highlight = (Tile) => ToggleHighlightEffect(Tile, true);
+                ApplyTileEffects(_selectedPieceRange, Highlight);
+            }
+        } 
 
         public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject) {
             this.width = width;
@@ -106,13 +120,16 @@ namespace Components {
             return range;
         }
 
-
-        // Used to highlight a list of tiles (Tile Zone). As of now used to highlight/unhighlight the tiles in range of the selected board piece
-        private void ToggleTileZone(List<Tile> tileZone, bool toggle) {
+        private void ApplyTileEffects(List<Tile> tileZone, Action<Tile> applyEffect) {
             foreach (Tile tile in tileZone) {
-                tile.Highlight = toggle;
+                applyEffect(tile);
                 TriggerGridObjectChanged(tile.xCoord, tile.yCoord);
             }
+        }
+
+        // Used to highlight a list of tiles (Tile Zone). As of now used to highlight/unhighlight the tiles in range of the selected board piece
+        private void ToggleHighlightEffect(Tile tile, bool toggle) {
+            tile.Highlight = toggle;
         }
 
         public Vector3 GetWorldPosition(int x, int y) {
