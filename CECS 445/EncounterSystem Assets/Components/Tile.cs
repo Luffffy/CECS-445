@@ -12,6 +12,10 @@ namespace Components {
 
         private List<Tile> _neighbors;
 
+        public int Cost { get; set; }
+
+        public Tile Parent { get; set; }
+
         public Terrain Terrain { get; set; }
 
         public bool Highlight { get; set; }
@@ -46,6 +50,7 @@ namespace Components {
             xCoord = x;
             yCoord = y;
             grid = g;
+            this.Terrain = new Terrain(Terrain.Property.None);
         }
 
         public override string ToString() {

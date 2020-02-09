@@ -50,6 +50,7 @@ namespace Components {
             set {
                 if (_selectedPieceRange != null) {
                     Action<Tile> unHighlight = (Tile) => ToggleHighlightEffect(Tile, false);
+                    Action<Tile> clearPathFindingCost = (Tile) => SetTileCost(Tile, 0);
                     ApplyTileEffects(_selectedPieceRange, unHighlight);
                 }
                 _selectedPieceRange = value;
@@ -92,6 +93,10 @@ namespace Components {
             }
         }
 
+        public void SetTileCost(Tile tile, int cost) {
+            tile.Cost = cost;
+        }
+
         // Used to find tiles that a board piece can reach with their movespeed. So far uses manhatten distance but must change in order to account for obstacles such as walls.
         public List<Tile> FindValidMoves(BoardPiece boardPiece) {
             List<Tile> range = new List<Tile>();
@@ -99,6 +104,8 @@ namespace Components {
             List<Tile> visitedList = new List<Tile>();
             Tile currentTile;
             Tile boardPieceTile = boardPiece.Tile;
+            int neighborCost;
+            boardPieceTile.Cost = 0;
             queue.Enqueue(boardPiece.Tile);
             while (queue.Count > 0) {
                 currentTile = queue.Dequeue();
@@ -106,12 +113,11 @@ namespace Components {
                 foreach (Tile neighbor in currentTile.Neighbors) {
                     if (!visitedList.Contains(neighbor)) {
                         visitedList.Add(neighbor);
-                        Debug.Log(selectedPiece.MoveSpeed);
-                        if (neighbor.Terrain != Terrain.Wall && UtilsClass.CalculateManhattanDistance(neighbor.xCoord, neighbor.yCoord, selectedPiece.Tile.xCoord, selectedPiece.Tile.yCoord) <= boardPiece.MoveSpeed) {
+                        Debug.Log(boardPiece.MoveSpeed);
+                        neighborCost = currentTile.Cost + neighbor.Terrain.Cost;
+                        if (neighbor.Terrain.IsWalkable && neighborCost <= boardPiece.MoveSpeed) {
+                            neighbor.Cost = neighborCost;
                             range.Add(neighbor);
-                            neighbor.Highlight = true;
-                            Debug.Log("Found: neighbor at " + (neighbor.xCoord - selectedPiece.Tile.xCoord) + " " + (neighbor.yCoord - selectedPiece.Tile.yCoord));
-                            TriggerGridObjectChanged(neighbor.xCoord, neighbor.yCoord);
                             queue.Enqueue(neighbor);
                         }
                     }
@@ -121,6 +127,9 @@ namespace Components {
         }
 
         private void ApplyTileEffects(List<Tile> tileZone, Action<Tile> applyEffect) {
+            if (tileZone == null) {
+                return;
+            }
             foreach (Tile tile in tileZone) {
                 applyEffect(tile);
                 TriggerGridObjectChanged(tile.xCoord, tile.yCoord);

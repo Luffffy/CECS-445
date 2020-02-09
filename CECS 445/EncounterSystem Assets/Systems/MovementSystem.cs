@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class MovementSystem {
 
     public bool IsValidSpace(Tile target) {
-        return target.BoardPiece == null && target.Terrain != Components.Terrain.Wall;
+        return target.BoardPiece == null && target.Terrain.IsWalkable;
     }
 
 

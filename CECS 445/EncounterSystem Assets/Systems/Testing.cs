@@ -39,12 +39,25 @@ public class Testing : MonoBehaviour {
 
         // Create a wall
         if (Input.GetKey(KeyCode.W)) {
-            tile.Terrain = Components.Terrain.Wall;
+            tile.Terrain.Type = Components.Terrain.Property.Wall;
             tileSystem.updateTile(tile);
         }
+        if (Input.GetKey(KeyCode.C)) {
+            tile.Terrain.Type = Components.Terrain.Property.ClosedDoor;
+            tileSystem.updateTile(tile);
+        }
+        if (Input.GetKey(KeyCode.O)) {
+            tile.Terrain.Type = Components.Terrain.Property.OpenDoor;
+            tileSystem.updateTile(tile);
+        }
+        if (Input.GetKey(KeyCode.P)) {
+            tile.Terrain.Type = Components.Terrain.Property.Puddle;
+            tileSystem.updateTile(tile);
+        }
+
         // Select board piece
         if (Input.GetMouseButtonDown(1)) {
-            board.selectedPiece = board.GetGridObject(mouseWorldPosition).BoardPiece;
+            board.selectedPiece = tile.BoardPiece;
             Debug.Log(board.selectedPiece);
         }
 
